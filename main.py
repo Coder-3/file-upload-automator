@@ -23,18 +23,18 @@ def login():
     
     driver.find_element_by_id("gform_submit_button_24").click()
 
-def search_products(product_line):
-    driver.get("https://duluxpowders.com.au/wp-admin/edit.php?post_type=product")
+def search_products(pageNumber):
+    driver.get("https://duluxpowders.com.au/wp-admin/edit.php?orderby=title&order=asc&s=precious&post_status=all&post_type=product&m=0&layout=5e617bd96816a&action=-1&paged=" + str(pageNumber) + "&action2=-1")
 
-    postSearch = driver.find_element_by_id("post-search-input")
-    postSearch.clear()
-    postSearch.send_keys(product_line)
+    # postSearch = driver.find_element_by_id("post-search-input")
+    # postSearch.clear()
+    # postSearch.send_keys(product_line)
 
-    driver.find_element_by_id("search-submit").click()
+    # driver.find_element_by_id("search-submit").click()
 
-def select_product(product_number):
+def select_product(productNumber):
     productNames = driver.find_elements_by_class_name("row-title")
-    productNames[product_number].click()
+    productNames[productNumber].click()
 
 def match_product():
     currentProduct = driver.find_element_by_id("title").get_attribute("value")
@@ -43,10 +43,13 @@ def match_product():
     return matchedProduct
 
 def upload_file():
-    matchedProduct = match_product()[0]
+    matchedProduct = match_product()
 
-    driver.find_elements_by_class_name("acf-button")[1].click()
-    driver.find_element_by_id("media-search-input").send_keys(matchedProduct)
+    try:
+        driver.find_elements_by_class_name("acf-button")[1].click()
+    except:
+        return
+    driver.find_element_by_id("media-search-input").send_keys(matchedProduct[0])
 
     time.sleep(2)
 
@@ -58,23 +61,25 @@ def update():
     element = driver.find_element_by_class_name("is-active")
 
     if(element):
-        time.sleep(4)
+        time.sleep(5)
         return
 
-def main():
-    # pageNumber = 0
-    # productNumber = 0
-    login()
-    time.sleep(2)
-    for i in range(20):
-        search_products("duralloy")
-        select_product(i)
-        try:
-            upload_file()
-        except:
-            continue
-        update()
+def steps(pageNumber, productNumber):
+    search_products(pageNumber)
+    select_product(productNumber)
+    productNumber += 1
+    try:
+        upload_file()
+    except:
+        time.sleep(10)
+        return
+    time.sleep(10)
 
+login()
 
-main()
+time.sleep(2)
+
+for i in range(9, 20):
+    steps(2, i)
+
 # driver.quit()
